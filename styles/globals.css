@@ -4,8 +4,11 @@
 
 :root {
   --primary: #4f46e5;
+  --primary-rgb: 79 70 229;
   --secondary: #6366f1;
+  --secondary-rgb: 99 102 241;
   --accent: #8b5cf6;
+  --accent-rgb: 139 92 246;
   --background: #0f172a;
   --surface: #111827;
   --card: rgba(255, 255, 255, 0.05);
@@ -19,8 +22,11 @@
 
 [data-theme='light'] {
   --primary: #4f46e5;
+  --primary-rgb: 79 70 229;
   --secondary: #6366f1;
+  --secondary-rgb: 99 102 241;
   --accent: #7c3aed;
+  --accent-rgb: 124 58 237;
   --background: #f8fafc;
   --surface: #ffffff;
   --card: rgba(15, 23, 42, 0.04);

@@ -3,14 +3,15 @@ module.exports = {
   content: [
     './app/**/*.{js,jsx}',
     './components/**/*.{js,jsx}',
+    './styles/**/*.css',
   ],
   darkMode: ['class', '[data-theme="dark"]'],
   theme: {
     extend: {
       colors: {
-        primary: 'var(--primary)',
-        secondary: 'var(--secondary)',
-        accent: 'var(--accent)',
+        primary: 'rgb(var(--primary-rgb) / <alpha-value>)',
+        secondary: 'rgb(var(--secondary-rgb) / <alpha-value>)',
+        accent: 'rgb(var(--accent-rgb) / <alpha-value>)',
         background: 'var(--background)',
         surface: 'var(--surface)',
         card: 'var(--card)',

@@ -146,17 +146,17 @@ Notice how data (attributes) and behavior (methods) are bundled together in one 
     def deposit(self, amount):
         if amount > 0:
             self.balance += amount
-            return f"Deposited ${amount}. New balance: ${self.balance}"
+            return f"Deposited \${amount}. New balance: \${self.balance}"
         return "Invalid deposit amount"
 
     def withdraw(self, amount):
         if 0 < amount <= self.balance:
             self.balance -= amount
-            return f"Withdrew ${amount}. New balance: ${self.balance}"
+            return f"Withdrew \${amount}. New balance: \${self.balance}"
         return "Insufficient funds or invalid amount"
 
     def __str__(self):
-        return f"Account({self.holder}, ${self.balance})"
+        return f"Account({self.holder}, \${self.balance})"
 
 account = BankAccount("Ahmed", 1000)
 print(account.deposit(500))
