@@ -67,6 +67,12 @@ export const lessonContent = [
     title: 'Introduction to OOP & Classes',
     description: 'Learn what Object-Oriented Programming is and how to create your first Python classes.',
     duration: '15 min',
+    objectives: [
+      'Explain what OOP is and why Python uses it',
+      'Define a class and create object instances',
+      'Use __init__ to initialize object state',
+      'Bundle data and behavior in a real-world class',
+    ],
     slides: [
       {
         title: 'What is Object-Oriented Programming?',
@@ -105,6 +111,18 @@ max = Dog()
 # Each object is independent
 print(buddy)  # <__main__.Dog object at 0x...>
 print(max)    # Different object in memory`,
+        practice: {
+          prompt: 'Scenario: A pet shelter tracks dogs. In your notebook, create a Dog class with name and breed attributes, then instantiate two different dogs.',
+          hint: 'Use __init__(self, name, breed) and assign to self.name and self.breed',
+          solution: `class Dog:
+    def __init__(self, name, breed):
+        self.name = name
+        self.breed = breed
+
+buddy = Dog("Buddy", "Labrador")
+luna = Dog("Luna", "Husky")
+print(buddy.name, buddy.breed)`,
+        },
       },
       {
         title: 'The __init__ Constructor',
@@ -162,6 +180,27 @@ account = BankAccount("Ahmed", 1000)
 print(account.deposit(500))
 print(account.withdraw(200))
 print(account)  # Account(Ahmed, $1300)`,
+        practice: {
+          prompt: 'Scenario: Build a BankAccount in your editor with deposit and withdraw methods. Test with a starting balance of 500.',
+          hint: 'Validate amount > 0 for deposits and check balance before withdraw',
+          solution: `class BankAccount:
+    def __init__(self, holder, balance=0):
+        self.holder = holder
+        self.balance = balance
+
+    def deposit(self, amount):
+        if amount > 0:
+            self.balance += amount
+
+    def withdraw(self, amount):
+        if 0 < amount <= self.balance:
+            self.balance -= amount
+
+acct = BankAccount("Sara", 500)
+acct.deposit(200)
+acct.withdraw(100)
+print(acct.balance)  # 600`,
+        },
       },
       {
         title: 'OOP in Practice — Key Takeaways',
@@ -221,6 +260,12 @@ print(account)  # Account(Ahmed, $1300)`,
     title: 'Attributes and Methods',
     description: 'Understand instance attributes, methods, self, and class-level data.',
     duration: '18 min',
+    objectives: [
+      'Distinguish instance attributes from class attributes',
+      'Write instance methods that use self',
+      'Understand when data is shared vs per-object',
+      'Apply attributes and methods in practical examples',
+    ],
     slides: [
       {
         title: 'Instance Attributes',
@@ -271,6 +316,21 @@ Methods can:
 
 s = Student("Ahmed", 88)
 print(s.display())  # Ahmed: 88% (B)`,
+        practice: {
+          prompt: 'Scenario: A Product class has name and price. Add a method apply_discount(percent) that reduces price. Code it in your notebook.',
+          hint: 'self.price = self.price * (1 - percent / 100)',
+          solution: `class Product:
+    def __init__(self, name, price):
+        self.name = name
+        self.price = price
+
+    def apply_discount(self, percent):
+        self.price = self.price * (1 - percent / 100)
+        return self.price
+
+p = Product("Keyboard", 100)
+print(p.apply_discount(10))  # 90.0`,
+        },
       },
       {
         title: 'Class Attributes',
@@ -296,6 +356,19 @@ s2 = Student("Sara")
 print(s1.school)           # ABC Academy
 print(s2.school)           # ABC Academy
 print(Student.student_count)  # 2`,
+        practice: {
+          prompt: 'Scenario: Create a Counter class with a class attribute total that increments each time a new Counter is created.',
+          hint: 'Counter.total += 1 inside __init__',
+          solution: `class Counter:
+    total = 0
+
+    def __init__(self):
+        Counter.total += 1
+
+a = Counter()
+b = Counter()
+print(Counter.total)  # 2`,
+        },
       },
       {
         title: 'Association Between Objects',
@@ -381,6 +454,12 @@ print(s2.teacher.name)  # Mr. Ali (same teacher)`,
     title: 'Inheritance',
     description: 'Master single, multiple, and multilevel inheritance with MRO and super().',
     duration: '22 min',
+    objectives: [
+      'Explain inheritance and the is-a relationship',
+      'Use super() to call parent class methods',
+      'Understand MRO in multiple inheritance',
+      'Apply inheritance in real class hierarchies',
+    ],
     slides: [
       {
         title: 'Inheritance Concepts',
@@ -405,6 +484,22 @@ class Dog(Animal):
 
 dog = Dog("Buddy")
 print(dog.speak())  # Buddy barks`,
+        practice: {
+          prompt: 'Scenario: Create Animal and Cat classes in your notebook. Cat should inherit from Animal and override speak() to return a meow.',
+          hint: 'class Cat(Animal): and override speak(self)',
+          solution: `class Animal:
+    def __init__(self, name):
+        self.name = name
+    def speak(self):
+        return f"{self.name} makes a sound"
+
+class Cat(Animal):
+    def speak(self):
+        return f"{self.name} meows"
+
+c = Cat("Whiskers")
+print(c.speak())`,
+        },
       },
       {
         title: 'Types of Inheritance',
@@ -550,6 +645,12 @@ print(D.__mro__)`,
     title: 'Polymorphism',
     description: 'Explore method overriding, duck typing, and runtime polymorphism.',
     duration: '20 min',
+    objectives: [
+      'Override methods in child classes',
+      'Apply duck typing in Python',
+      'Use polymorphism with shared interfaces',
+      'Recognize runtime vs compile-time polymorphism',
+    ],
     slides: [
       {
         title: 'What is Polymorphism?',
@@ -579,6 +680,23 @@ def animal_sound(animal):
 
 animal_sound(Duck())
 animal_sound(Dog())`,
+        practice: {
+          prompt: 'Scenario: Write a make_sound(animal) function that calls animal.speak() for any object with that method. Test with two different classes.',
+          hint: 'Duck typing — no isinstance check needed',
+          solution: `class Cat:
+    def speak(self):
+        print("Meow")
+
+class Bird:
+    def speak(self):
+        print("Tweet")
+
+def make_sound(creature):
+    creature.speak()
+
+make_sound(Cat())
+make_sound(Bird())`,
+        },
       },
       {
         title: 'Operator Overloading',
@@ -685,6 +803,12 @@ for a in animals:
     title: 'Encapsulation',
     description: 'Protect data with access conventions, getters, and setters.',
     duration: '16 min',
+    objectives: [
+      'Use naming conventions to signal private data',
+      'Implement getters and setters for controlled access',
+      'Explain why encapsulation improves maintainability',
+      'Protect object state from invalid changes',
+    ],
     slides: [
       {
         title: 'What is Encapsulation?',
@@ -745,6 +869,24 @@ This pattern is essential when:
 emp = Employee("Ali", 50000)
 emp.set_salary(55000)
 print(emp.get_salary())  # 55000`,
+        practice: {
+          prompt: 'Scenario: Build a Temperature class with private _celsius. Add set_celsius(value) that rejects values below -273.15.',
+          hint: 'Raise ValueError for invalid temperatures',
+          solution: `class Temperature:
+    def __init__(self, celsius):
+        self.set_celsius(celsius)
+
+    def set_celsius(self, value):
+        if value < -273.15:
+            raise ValueError("Too cold")
+        self._celsius = value
+
+    def get_celsius(self):
+        return self._celsius
+
+t = Temperature(25)
+print(t.get_celsius())`,
+        },
       },
       {
         title: 'Pythonic Access Control',
@@ -814,6 +956,12 @@ Encapsulation + validation = robust, maintainable classes.`,
     title: 'Abstraction',
     description: 'Use Abstract Base Classes and interfaces to define blueprints.',
     duration: '20 min',
+    objectives: [
+      'Define abstract classes with ABC module',
+      'Declare abstract methods that subclasses must implement',
+      'Hide implementation details behind interfaces',
+      'Design systems using abstraction layers',
+    ],
     slides: [
       {
         title: 'Abstract Base Classes (ABC)',
@@ -839,6 +987,22 @@ class Dog(Animal):
 
 d = Dog()
 d.sound()  # Dog barks`,
+        practice: {
+          prompt: 'Scenario: Define abstract class Payment(ABC) with abstract method pay(amount). Implement CreditCard class in your notebook.',
+          hint: 'from abc import ABC, abstractmethod',
+          solution: `from abc import ABC, abstractmethod
+
+class Payment(ABC):
+    @abstractmethod
+    def pay(self, amount):
+        pass
+
+class CreditCard(Payment):
+    def pay(self, amount):
+        print(f"Charged {amount} to card")
+
+CreditCard().pay(99.99)`,
+        },
       },
       {
         title: 'Enforcing Implementation',
@@ -978,6 +1142,12 @@ class Penguin(Bird):
     title: 'Magic Methods',
     description: 'Harness dunder methods like __str__, __repr__, __len__, and __eq__.',
     duration: '18 min',
+    objectives: [
+      'Use __str__ and __repr__ for readable object output',
+      'Implement __len__ and __eq__ for custom behavior',
+      'Understand when Python calls dunder methods',
+      'Make objects work naturally with built-in functions',
+    ],
     slides: [
       {
         title: 'Introduction to Magic Methods',
@@ -1035,6 +1205,20 @@ p1 = Playlist("Favorites", ["Song A", "Song B"])
 p2 = Playlist("Favorites", ["Song A", "Song B"])
 print(len(p1))    # 2
 print(p1 == p2)   # True`,
+        practice: {
+          prompt: 'Scenario: Create a Point class with x and y. Add __str__ so print(point) shows "(x, y)". Code it in your notebook.',
+          hint: 'return f"({self.x}, {self.y})"',
+          solution: `class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return f"({self.x}, {self.y})"
+
+p = Point(3, 4)
+print(p)  # (3, 4)`,
+        },
       },
       {
         title: '__dict__ — Object as Dictionary',
@@ -1108,6 +1292,12 @@ Implement magic methods to make your classes intuitive and Pythonic.`,
     title: 'Property Decorators',
     description: 'Create elegant getters, setters, and deleters with @property.',
     duration: '15 min',
+    objectives: [
+      'Create read-only and validated attributes with @property',
+      'Use @setter and @deleter decorators',
+      'Compare @property to manual getter methods',
+      'Apply properties in real-world data models',
+    ],
     slides: [
       {
         title: 'The @property Decorator',
@@ -1149,6 +1339,26 @@ print(p.name)  # Ali (no parentheses!)`,
 emp = Employee("Sara", 50000)
 emp.salary = 60000   # Uses setter
 print(emp.salary)    # 60000`,
+        practice: {
+          prompt: 'Scenario: Create a Circle class with private _radius. Use @property so circle.radius can be read, and a setter rejects negative values.',
+          hint: '@property def radius + @radius.setter',
+          solution: `class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+
+    @property
+    def radius(self):
+        return self._radius
+
+    @radius.setter
+    def radius(self, value):
+        if value <= 0:
+            raise ValueError("Radius must be positive")
+        self._radius = value
+
+c = Circle(5)
+print(c.radius)`,
+        },
       },
       {
         title: 'Property Deleters',
@@ -1190,6 +1400,42 @@ del u.email  # Email removed`,
 - Lazy-loaded values (fetch on first access)
 
 From Lecture 14: @property is listed alongside @staticmethod and @classmethod as a core Python decorator.`,
+      },
+      {
+        title: 'Practice: Computed Properties',
+        content: `A powerful use of @property is **computed attributes** — values derived from other data without storing duplicates.
+
+**Real-world example:** A Rectangle stores width and height; area is calculated on demand.`,
+        code: `class Rectangle:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    @property
+    def area(self):
+        return self.width * self.height
+
+rect = Rectangle(4, 5)
+print(rect.area)  # 20 — no parentheses needed`,
+        practice: {
+          prompt: 'Scenario: In your notebook, add a perimeter @property to Rectangle that returns 2 * (width + height).',
+          hint: 'Computed property — no setter needed if read-only',
+          solution: `class Rectangle:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    @property
+    def area(self):
+        return self.width * self.height
+
+    @property
+    def perimeter(self):
+        return 2 * (self.width + self.height)
+
+r = Rectangle(3, 4)
+print(r.perimeter)  # 14`,
+        },
       },
     ],
     questions: [
@@ -1233,6 +1479,12 @@ From Lecture 14: @property is listed alongside @staticmethod and @classmethod as
     title: 'Class Methods & Static Methods',
     description: 'Learn when to use @classmethod and @staticmethod effectively.',
     duration: '16 min',
+    objectives: [
+      'Distinguish instance, class, and static methods',
+      'Use @classmethod for alternative constructors',
+      'Use @staticmethod for utility functions in a class',
+      'Choose the right method type for each scenario',
+    ],
     slides: [
       {
         title: 'Instance vs Class vs Static Methods',
@@ -1273,6 +1525,21 @@ Common uses:
 Student.show_school()
 s = Student.from_birth_year("Ali", 2010)
 print(s.name, s.age)  # Ali 16`,
+        practice: {
+          prompt: 'Scenario: Add a @classmethod from_dict(cls, data) to Student that creates a student from {"name": "...", "age": ...}.',
+          hint: 'return cls(data["name"], data["age"])',
+          solution: `class Student:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(data["name"], data["age"])
+
+s = Student.from_dict({"name": "Ali", "age": 16})
+print(s.name)`,
+        },
       },
       {
         title: '@staticmethod',
@@ -1372,6 +1639,12 @@ print(Date.is_leap_year(2024))  # True`,
     title: 'Advanced Topics',
     description: 'Composition, design patterns, file handling, generics, decorators, and callbacks.',
     duration: '28 min',
+    objectives: [
+      'Compare composition vs inheritance',
+      'Recognize common design patterns in Python',
+      'Handle files with OOP-based designs',
+      'Understand decorators, generics, and callbacks in OOP context',
+    ],
     slides: [
       {
         title: 'Composition vs Inheritance',
@@ -1399,6 +1672,23 @@ car1 = Car(Engine())
 car2 = Car(ElectricEngine())
 car1.start()  # Engine starts
 car2.start()  # Electric engine starts silently`,
+        practice: {
+          prompt: 'Scenario: Model a Computer that HAS-A Processor (composition). In your notebook, Computer.start() should delegate to processor.run().',
+          hint: 'self.processor = processor in __init__',
+          solution: `class Processor:
+    def run(self):
+        print("Processor running")
+
+class Computer:
+    def __init__(self, processor):
+        self.processor = processor
+
+    def start(self):
+        self.processor.run()
+
+pc = Computer(Processor())
+pc.start()`,
+        },
       },
       {
         title: 'Design Patterns Overview',
@@ -1557,6 +1847,7 @@ lessons.forEach((meta, i) => {
     Object.assign(lessons[i], {
       slides: content.slides,
       questions: content.questions,
+      objectives: content.objectives,
     });
   }
 });

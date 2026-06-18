@@ -3,18 +3,22 @@
 import { motion } from 'framer-motion';
 import { calculateLevel, xpForNextLevel } from '@/lib/progress';
 
-export default function XPTracker({ xp = 0, compact = false }) {
+export default function XPTracker({ xp = 0, streak = 0, compact = false }) {
   const level = calculateLevel(xp);
   const { current, needed, progress } = xpForNextLevel(xp);
 
   if (compact) {
     return (
-      <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-card px-4 py-2 backdrop-blur-sm">
+      <div
+        className="flex items-center gap-3 rounded-xl border border-white/10 bg-card px-4 py-2 backdrop-blur-sm"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent text-sm font-bold text-white">
           {level}
         </div>
         <div>
-          <p className="text-xs text-muted">Level {level}</p>
+          <p className="text-xs text-muted">Level {level} · {streak > 0 ? `${streak}d streak` : 'No streak'}</p>
           <p className="text-sm font-semibold text-foreground">{xp} XP</p>
         </div>
       </div>
@@ -22,7 +26,7 @@ export default function XPTracker({ xp = 0, compact = false }) {
   }
 
   return (
-    <div className="glass-card p-5">
+    <div className="glass-card p-5" aria-live="polite" aria-atomic="true">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <motion.div

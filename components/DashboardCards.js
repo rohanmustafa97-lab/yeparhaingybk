@@ -9,6 +9,7 @@ import {
   getLastCompletedLesson,
 } from '@/lib/progress';
 import { getAchievementProgress } from '@/lib/achievements';
+import { getStreakLabel } from '@/lib/streak';
 import { lessons } from '@/data/lessons';
 import XPTracker from './XPTracker';
 
@@ -43,14 +44,14 @@ export default function DashboardCards({ progress }) {
   return (
     <div className="space-y-8">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total XP" value={xp} sub={`Level ${level}`} icon="⚡" delay={0} />
+        <StatCard label="Total XP" value={xp} sub={`Level ${level} · ${getStreakLabel(progress?.streak)}`} icon="⚡" delay={0} />
         <StatCard label="Completion" value={`${completion}%`} sub={`${completedCount} of ${lessons.length} lessons`} icon="📊" delay={0.1} />
         <StatCard label="Lessons Done" value={completedCount} sub={completedCount === lessons.length ? 'Course complete!' : 'Keep going!'} icon="✅" delay={0.2} />
         <StatCard label="Achievements" value={`${unlockedCount}/${achievements.length}`} sub="Unlocked badges" icon="🏆" delay={0.3} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <XPTracker xp={xp} />
+        <XPTracker xp={xp} streak={progress?.streak || 0} />
 
         <motion.div
           className="glass-card p-6"

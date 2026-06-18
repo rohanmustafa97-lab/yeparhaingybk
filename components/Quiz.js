@@ -4,25 +4,46 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { shuffleQuizQuestions } from '@/lib/quiz';
 
-export default function Quiz({ questions, onComplete }) {
+export default function Quiz({
+  lessonId,
+  questions,
+  onComplete,
+  savedProgress,
+  onProgressSave,
+}) {
   const shuffledQuestions = useMemo(() => shuffleQuizQuestions(questions), [questions]);
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const saved = savedProgress?.[lessonId];
+  const [currentQuestion, setCurrentQuestion] = useState(saved?.currentQuestion || 0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [checked, setChecked] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [correctCount, setCorrectCount] = useState(0);
+  const [correctCount, setCorrectCount] = useState(saved?.correctCount || 0);
 
   const question = shuffledQuestions[currentQuestion];
   const isLastQuestion = currentQuestion === shuffledQuestions.length - 1;
 
   useEffect(() => {
-    setCurrentQuestion(0);
+    if (saved?.currentQuestion != null) {
+      setCurrentQuestion(saved.currentQuestion);
+      setCorrectCount(saved.correctCount || 0);
+    } else {
+      setCurrentQuestion(0);
+      setCorrectCount(0);
+    }
     setSelectedAnswer(null);
     setChecked(false);
     setIsCorrect(false);
-    setCorrectCount(0);
-  }, [questions]);
+  }, [lessonId, questions]);
+
+  useEffect(() => {
+    if (!lessonId || !onProgressSave) return;
+    onProgressSave(lessonId, {
+      currentQuestion,
+      correctCount,
+      completed: false,
+    });
+  }, [lessonId, currentQuestion, correctCount, onProgressSave]);
 
   const handleCheck = useCallback(() => {
     if (selectedAnswer === null || !question) return;
@@ -172,6 +193,7 @@ export default function Quiz({ questions, onComplete }) {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="btn-primary disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="Check your selected answer"
               >
                 Check Answer
               </motion.button>
@@ -182,6 +204,7 @@ export default function Quiz({ questions, onComplete }) {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={isCorrect ? 'btn-primary' : 'btn-secondary'}
+                aria-label={isCorrect ? (isLastQuestion ? 'Complete quiz' : 'Go to next question') : 'Try again'}
               >
                 {isCorrect ? (isLastQuestion ? 'Complete Quiz' : 'Next Question') : 'Try Again'}
               </motion.button>

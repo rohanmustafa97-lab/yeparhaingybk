@@ -3,6 +3,7 @@
 import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CodeBlock from './CodeBlock';
+import PracticePrompt from './PracticePrompt';
 import ProgressBar from './ProgressBar';
 
 function isTableSeparator(row) {
@@ -72,6 +73,20 @@ function formatInline(text) {
   return result;
 }
 
+function ObjectivesSlide({ objectives }) {
+  if (!objectives?.length) return null;
+  return (
+    <div className="mb-6 rounded-xl border border-primary/30 bg-primary/10 p-4">
+      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-primary">Learning Objectives</h3>
+      <ul className="list-disc space-y-2 pl-5 text-sm text-muted">
+        {objectives.map((obj, i) => (
+          <li key={i} className="text-foreground">{obj}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function SlideViewer({
   lesson,
   currentSlide,
@@ -82,6 +97,7 @@ export default function SlideViewer({
 }) {
   const slide = lesson?.slides?.[currentSlide];
   const totalSlides = lesson?.slides?.length || 0;
+  const questionCount = lesson?.questions?.length || 0;
   const progress = totalSlides > 0 ? Math.round(((currentSlide + 1) / totalSlides) * 100) : 0;
   const isFirst = currentSlide === 0;
   const isLast = currentSlide === totalSlides - 1;
@@ -89,10 +105,13 @@ export default function SlideViewer({
   const handleKeyDown = useCallback(
     (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-      if (e.key === 'ArrowRight' && !isLast) onNext();
+      if (e.key === 'ArrowRight') {
+        if (isLast) onComplete();
+        else onNext();
+      }
       if (e.key === 'ArrowLeft' && !isFirst) onPrevious();
     },
-    [isFirst, isLast, onNext, onPrevious]
+    [isFirst, isLast, onNext, onPrevious, onComplete]
   );
 
   useEffect(() => {
@@ -130,12 +149,21 @@ export default function SlideViewer({
           className="flex-1"
         >
           <div className="glass-card p-6 md:p-8">
+            {currentSlide === 0 && <ObjectivesSlide objectives={lesson.objectives} />}
             <h2 className="mb-6 text-2xl font-bold text-foreground md:text-3xl">{slide.title}</h2>
             <div className="prose-lesson space-y-4">{formatContent(slide.content)}</div>
             {slide.code && <CodeBlock code={slide.code} />}
+            {slide.practice && <PracticePrompt practice={slide.practice} />}
           </div>
         </motion.div>
       </AnimatePresence>
+
+      {isLast && (
+        <div className="mt-4 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-center text-sm text-foreground">
+          <span className="font-semibold text-primary">Up next:</span>{' '}
+          {questionCount} scenario quiz question{questionCount !== 1 ? 's' : ''} to unlock the next lesson
+        </div>
+      )}
 
       <div className="mt-6 flex flex-col-reverse items-stretch justify-between gap-3 sm:flex-row sm:items-center">
         <motion.button
@@ -146,8 +174,10 @@ export default function SlideViewer({
           whileTap={!isFirst ? { scale: 0.98 } : {}}
           className="btn-secondary disabled:cursor-not-allowed disabled:opacity-40"
           aria-label="Previous slide"
+          aria-disabled={isFirst}
+          title={isFirst ? "You're on the first slide" : 'Go to previous slide'}
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           Previous
@@ -159,10 +189,11 @@ export default function SlideViewer({
             onClick={onComplete}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="btn-primary"
+            className="btn-primary ring-2 ring-primary/40 ring-offset-2 ring-offset-background"
+            aria-label={isReview ? 'Continue to review quiz' : 'Continue to lesson quiz'}
           >
-            {isReview ? 'Review Quiz' : 'Start Quiz'}
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            {isReview ? 'Continue to Quiz' : 'Continue to Quiz'}
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </motion.button>
@@ -176,7 +207,7 @@ export default function SlideViewer({
             aria-label="Next slide"
           >
             Next
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </motion.button>

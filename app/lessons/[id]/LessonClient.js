@@ -11,17 +11,17 @@ import Quiz from '@/components/Quiz';
 import AchievementModal from '@/components/AchievementModal';
 import ThemeToggle from '@/components/ThemeToggle';
 import { getLessonById, lessons, getLessonIndex } from '@/data/lessons';
-import { loadProgress, saveProgressImmediate } from '@/lib/storage';
 import { getNextLesson, isLessonLocked, isLessonCompleted } from '@/lib/progress';
 import { awardSlideXpIfNew, processQuizCompletion } from '@/lib/lessonState';
+import { useProgress } from '@/lib/ProgressContext';
 
 export default function LessonClient() {
   const params = useParams();
   const router = useRouter();
   const lessonId = Array.isArray(params.id) ? params.id[0] : params.id;
   const mainRef = useRef(null);
+  const { progress, ready, updateProgress } = useProgress();
 
-  const [progress, setProgress] = useState(null);
   const [phase, setPhase] = useState('slides');
   const [currentSlide, setCurrentSlide] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -33,41 +33,36 @@ export default function LessonClient() {
   const lesson = getLessonById(lessonId);
   const activeAchievement = achievementQueue[0] || null;
   const isReview = progress ? isLessonCompleted(lessonId, progress.completedLessons) && !justCompleted : false;
+  const questionCount = lesson?.questions?.length || 0;
 
-  // Reset lesson state when navigating between lessons
   useEffect(() => {
-    const stored = loadProgress();
+    if (!ready || !progress) return;
 
-    setProgress(stored);
     setPhase('slides');
     setXpEarned(0);
     setAchievementQueue([]);
     setJustCompleted(false);
 
-    if (stored.currentLessonId === lessonId && typeof stored.currentSlideIndex === 'number') {
-      setCurrentSlide(stored.currentSlideIndex);
+    if (progress.currentLessonId === lessonId && typeof progress.currentSlideIndex === 'number') {
+      setCurrentSlide(progress.currentSlideIndex);
     } else {
       setCurrentSlide(0);
     }
-  }, [lessonId]);
+  }, [lessonId, ready]);
 
-  // Award XP when a slide is viewed for the first time
   useEffect(() => {
     if (!lesson || phase !== 'slides' || !progress) return;
 
     const { state, changed } = awardSlideXpIfNew(progress, lessonId, currentSlide);
     if (changed) {
-      saveProgressImmediate(state);
-      setProgress(state);
+      updateProgress(state);
     }
-  }, [lesson, lessonId, currentSlide, phase, progress]);
+  }, [lesson, lessonId, currentSlide, phase, progress, updateProgress]);
 
-  // Scroll to top on slide or phase change
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentSlide, phase, lessonId]);
 
-  // Lock body scroll when mobile drawer is open
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = 'hidden';
@@ -79,47 +74,58 @@ export default function LessonClient() {
     };
   }, [mobileOpen]);
 
-  const persistProgress = useCallback(
-    (next) => {
-      const saved = {
-        ...next,
-        currentLessonId: lessonId,
-        currentSlideIndex: next.currentSlideIndex ?? currentSlide,
-      };
-      saveProgressImmediate(saved);
-      return saved;
-    },
-    [lessonId, currentSlide]
-  );
-
   const handleNext = useCallback(() => {
     const nextSlide = currentSlide + 1;
     setCurrentSlide(nextSlide);
-    setProgress((prev) => persistProgress({ ...prev, currentSlideIndex: nextSlide }));
-  }, [currentSlide, persistProgress]);
+    updateProgress((prev) => ({
+      ...prev,
+      currentLessonId: lessonId,
+      currentSlideIndex: nextSlide,
+    }));
+  }, [currentSlide, lessonId, updateProgress]);
 
   const handlePrevious = useCallback(() => {
     const prevSlide = currentSlide - 1;
     setCurrentSlide(prevSlide);
-    setProgress((prev) => persistProgress({ ...prev, currentSlideIndex: prevSlide }));
-  }, [currentSlide, persistProgress]);
+    updateProgress((prev) => ({
+      ...prev,
+      currentLessonId: lessonId,
+      currentSlideIndex: prevSlide,
+    }));
+  }, [currentSlide, lessonId, updateProgress]);
 
   const handleStartQuiz = useCallback(() => {
+    setPhase('quiz-intro');
+  }, []);
+
+  const handleBeginQuiz = useCallback(() => {
     setPhase('quiz');
   }, []);
 
+  const handleQuizProgressSave = useCallback(
+    (id, quizState) => {
+      updateProgress((prev) => ({
+        ...prev,
+        quizAnswers: {
+          ...(prev.quizAnswers || {}),
+          [id]: quizState,
+        },
+      }));
+    },
+    [updateProgress]
+  );
+
   const handleQuizComplete = useCallback(
     (correctCount) => {
-      setProgress((prev) => {
-        const { state, totalXp, newAchievements } = processQuizCompletion(prev, lessonId, correctCount);
-        setXpEarned(totalXp);
-        setJustCompleted(totalXp > 0);
-        if (newAchievements.length > 0) {
-          setTimeout(() => setAchievementQueue(newAchievements), 500);
-        }
-        saveProgressImmediate(state);
-        return state;
-      });
+      const result = processQuizCompletion(progress, lessonId, correctCount);
+      if (!result.passed) return;
+
+      updateProgress(result.state);
+      setXpEarned(result.totalXp);
+      setJustCompleted(result.totalXp > 0);
+      if (result.newAchievements.length > 0) {
+        setTimeout(() => setAchievementQueue(result.newAchievements), 500);
+      }
 
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (!prefersReducedMotion) {
@@ -133,7 +139,7 @@ export default function LessonClient() {
 
       setPhase('complete');
     },
-    [lessonId]
+    [lessonId, progress, updateProgress]
   );
 
   const handleContinue = useCallback(() => {
@@ -163,7 +169,7 @@ export default function LessonClient() {
     );
   }
 
-  if (!progress) {
+  if (!ready || !progress) {
     return (
       <div className="flex min-h-screen items-center justify-center gradient-bg">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" role="status" aria-label="Loading lesson" />
@@ -184,7 +190,7 @@ export default function LessonClient() {
           <span className="mb-4 block text-4xl" aria-hidden="true">🔒</span>
           <h1 className="mb-2 text-2xl font-bold text-foreground">Lesson Locked</h1>
           <p className="mb-6 text-muted">
-            Complete &quot;{prevLesson?.title}&quot; first to unlock this lesson.
+            Finish the quiz in &quot;{prevLesson?.title}&quot; to unlock this lesson.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Link href={prevLesson ? `/lessons/${prevLesson.id}` : '/lessons/intro-to-oop'} className="btn-primary">
@@ -269,6 +275,37 @@ export default function LessonClient() {
             </motion.div>
           )}
 
+          {phase === 'quiz-intro' && (
+            <motion.div
+              key="quiz-intro"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-auto max-w-lg text-center"
+            >
+              <div className="glass-card p-8 md:p-10">
+                <span className="mb-4 block text-5xl" aria-hidden="true">🧠</span>
+                <h2 className="mb-2 text-2xl font-bold text-foreground">Lesson Quiz</h2>
+                <p className="mb-6 text-muted">
+                  {questionCount} scenario-based question{questionCount !== 1 ? 's' : ''}. Answer each correctly to proceed.
+                  Passing unlocks the next lesson and awards XP.
+                </p>
+                <ul className="mb-8 space-y-2 text-left text-sm text-muted">
+                  <li>• Read each scenario carefully</li>
+                  <li>• You must answer correctly before moving on</li>
+                  <li>• Explanations appear after each check</li>
+                </ul>
+                <div className="flex flex-col gap-3">
+                  <button type="button" onClick={handleBeginQuiz} className="btn-primary w-full">
+                    Begin Quiz
+                  </button>
+                  <button type="button" onClick={() => setPhase('slides')} className="btn-secondary w-full">
+                    Back to Slides
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {phase === 'quiz' && (
             <motion.div
               key="quiz"
@@ -282,16 +319,19 @@ export default function LessonClient() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setPhase('slides')}
+                  onClick={() => setPhase('quiz-intro')}
                   className="btn-secondary text-sm"
                 >
-                  Back to Slides
+                  Back
                 </button>
               </div>
               <Quiz
                 key={`${lessonId}-quiz`}
+                lessonId={lessonId}
                 questions={lesson.questions || []}
                 onComplete={handleQuizComplete}
+                savedProgress={progress.quizAnswers}
+                onProgressSave={handleQuizProgressSave}
               />
             </motion.div>
           )}

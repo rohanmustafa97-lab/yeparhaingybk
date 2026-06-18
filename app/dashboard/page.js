@@ -1,38 +1,29 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Sidebar from '@/components/Sidebar';
 import DashboardCards from '@/components/DashboardCards';
 import CourseRoadmap from '@/components/CourseRoadmap';
 import ThemeToggle from '@/components/ThemeToggle';
-import { loadProgress, resetProgress } from '@/lib/storage';
+import LessonSearch from '@/components/LessonSearch';
+import ProgressBackup from '@/components/ProgressBackup';
+import { getDefaultState } from '@/lib/storage';
 import { getCurrentLesson } from '@/lib/progress';
+import { useProgress } from '@/lib/ProgressContext';
 
 export default function DashboardPage() {
-  const [progress, setProgress] = useState(null);
+  const { progress, ready, resetProgressState } = useProgress();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  const refreshProgress = useCallback(() => {
-    setProgress(loadProgress());
-  }, []);
-
-  useEffect(() => {
-    refreshProgress();
-    const onFocus = () => refreshProgress();
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
-  }, [refreshProgress]);
-
   const handleReset = () => {
-    const reset = resetProgress();
-    setProgress(reset);
+    resetProgressState(getDefaultState());
     setShowResetConfirm(false);
   };
 
-  if (!progress) {
+  if (!ready || !progress) {
     return (
       <div className="flex min-h-screen items-center justify-center gradient-bg">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" role="status" aria-label="Loading dashboard" />
@@ -103,12 +94,15 @@ export default function DashboardPage() {
               </div>
             )}
 
+            <LessonSearch progress={progress} />
+
             <DashboardCards progress={progress} />
 
-            <div className="mt-8">
+            <div className="mt-8 grid gap-6 lg:grid-cols-2">
               <div className="glass-card p-6 md:p-8">
                 <CourseRoadmap progress={progress} interactive />
               </div>
+              <ProgressBackup onImport={resetProgressState} />
             </div>
 
             <div className="mt-8 flex justify-end">
