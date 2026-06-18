@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #4f46e5;
+  --secondary: #6366f1;
+  --accent: #8b5cf6;
+  --background: #0f172a;
+  --surface: #111827;
+  --card: rgba(255, 255, 255, 0.05);
+  --foreground: #f8fafc;
+  --muted: #94a3b8;
+  --border: rgba(255, 255, 255, 0.1);
+  --gradient-start: #1e1b4b;
+  --gradient-mid: #312e81;
+  --gradient-end: #0f172a;
+}
+
+[data-theme='light'] {
+  --primary: #4f46e5;
+  --secondary: #6366f1;
+  --accent: #7c3aed;
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --card: rgba(15, 23, 42, 0.04);
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --border: rgba(15, 23, 42, 0.1);
+  --gradient-start: #eef2ff;
+  --gradient-mid: #e0e7ff;
+  --gradient-end: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply rounded-2xl border border-white/10 bg-card backdrop-blur-xl;
+  }
+
+  [data-theme='light'] .glass-card {
+    @apply border-slate-200/80 shadow-sm;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-secondary px-6 py-3 text-sm font-semibold text-white shadow-glow transition-all hover:shadow-glow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-card px-6 py-3 text-sm font-semibold text-foreground backdrop-blur-sm transition-all hover:border-primary/50 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent;
+  }
+
+  .gradient-bg {
+    background: linear-gradient(
+      135deg,
+      var(--gradient-start) 0%,
+      var(--gradient-mid) 50%,
+      var(--gradient-end) 100%
+    );
+    background-size: 200% 200%;
+  }
+
+  .prose-lesson {
+    @apply space-y-4 text-base leading-relaxed text-muted;
+  }
+
+  .prose-lesson strong {
+    @apply font-semibold text-foreground;
+  }
+
+  .prose-lesson ul {
+    @apply list-disc space-y-2 pl-5;
+  }
+
+  .prose-lesson li {
+    @apply text-muted;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Syntax highlighter overrides */
+.code-block-wrapper pre {
+  margin: 0 !important;
+  padding: 1.25rem 1rem !important;
+  background: transparent !important;
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
+}
+
+.code-block-wrapper code {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace !important;
+}
+
+.skip-link {
+  @apply sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-white;
+}
